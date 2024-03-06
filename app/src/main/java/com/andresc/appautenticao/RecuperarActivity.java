@@ -16,5 +16,8 @@ public class RecuperarActivity extends AppCompatActivity {
         binding = ActivityRecuperarBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+
+        binding.imgBtnBack.setOnClickListener(v -> finish());
+
     }
 }
