@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "980940847942",
+    "project_id": "app-autenticacao-6dfd5",
+    "storage_bucket": "app-autenticacao-6dfd5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:980940847942:android:66cac462bf374298be0347",
+        "android_client_info": {
+          "package_name": "com.andresc.appautenticao"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvw5CtFEonXJL0dHEkrqxxxpPMZ1lnAvo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
