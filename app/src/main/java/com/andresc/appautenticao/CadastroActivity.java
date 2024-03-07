@@ -2,7 +2,6 @@ package com.andresc.appautenticao;
 
 import static android.content.ContentValues.TAG;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -11,7 +10,6 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.andresc.appautenticao.databinding.ActivityCadastroBinding;
-import com.google.android.gms.common.util.Hex;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -32,6 +30,16 @@ public class CadastroActivity extends AppCompatActivity {
 
         binding.btnCads.setOnClickListener(v -> validData());
         binding.imgBtnBack.setOnClickListener(v -> finish());
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if(currentUser != null){
+            //reload();
+            finish();
+        }
     }
 
     private void validData() {
@@ -62,12 +70,12 @@ public class CadastroActivity extends AppCompatActivity {
             }else{
                 //dados validados
                 //solicitando criação da conta
-                submitAccount(email, passw);
+                submitAccountFirebase(email, passw);
             }
         }
     }
 
-    private void submitAccount(String email, String password){
+    private void submitAccountFirebase(String email, String password){
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if(task.isSuccessful()){
