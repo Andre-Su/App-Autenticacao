@@ -2,6 +2,7 @@ package com.andresc.appautenticao;
 
 import static android.content.ContentValues.TAG;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -39,6 +40,7 @@ public class CadastroActivity extends AppCompatActivity {
         if(currentUser != null){
             //reload();
             finish();
+            startActivity(new Intent(this,LoginActivity.class));
         }
     }
 

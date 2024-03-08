@@ -34,6 +34,10 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
+        binding.btnLogin.setOnClickListener(v -> {
+            validData();
+        });
+
         binding.textCad.setOnClickListener(v -> {
             startActivity(new Intent(this, CadastroActivity.class));
         });
@@ -50,6 +54,9 @@ public class LoginActivity extends AppCompatActivity {
         if(currentUser != null){
             //reload();
             //atualizar a interface
+            Log.d(TAG, "Firebase User is Logged-in");
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
         }
     }
 
@@ -57,7 +64,7 @@ public class LoginActivity extends AppCompatActivity {
         binding.progressBar.setVisibility(View.VISIBLE);
         //coletar strings
         String email = binding.editEmail.getText().toString().trim();
-        String passw = binding.editPassword.getText().toString().trim();
+        String password = binding.editPassword.getText().toString().trim();
 
         if(email.isEmpty()){
             //email vazio
@@ -66,7 +73,7 @@ public class LoginActivity extends AppCompatActivity {
             msgLog(1, "");
             binding.progressBar.setVisibility(View.INVISIBLE);
         }else{
-            if(passw.isEmpty()){
+            if(password.isEmpty()){
                 //senha vazia
                 binding.editPassword.setError("Digite a senha");
                 binding.editPassword.requestFocus();
@@ -75,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
             }else{
                 //dados validados
                 //solicitando criação da conta
-                loginAccountFirebase(email, passw);
+                loginAccountFirebase(email, password);
             }
         }
     }
@@ -86,20 +93,38 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+                            binding.progressBar.setVisibility(View.INVISIBLE);
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
                             //updateUI(user);
+                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                            finish();
                         } else {
+                            binding.progressBar.setVisibility(View.INVISIBLE);
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
                             String message = (Objects.requireNonNull(task.getException()).getMessage());
                             assert message != null;
-                            Toast.makeText(LoginActivity.this,message,Toast.LENGTH_SHORT).show();
+                            if (message.equals("The email address is badly formatted.")) {
+                                //email invalido
+                                binding.editEmail.setError("Email Inválido");
+                                binding.editEmail.requestFocus();
+                                msgLog(7, "");
+
+                            } else {
+                                //outro erro
+                                msgLog(9,message);
+                            }
                             //updateUI(null);
+                            msgLog(4,"");
                         }
                     }
                 });
+    }
+    private void createUser(){
+    String email, password;
+    email = ""; password = "";
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if(task.isSuccessful()){
@@ -145,7 +170,7 @@ public class LoginActivity extends AppCompatActivity {
         msg[0] = "";
         msg[1] = "Email em branco";
         msg[2] = "Senha em branco";
-        msg[3] = "Criado com Sucesso!\nRedirecionando para Login...";
+        msg[3] = "Login feito com sucesso!";
         msg[4] = "Ocorreu um erro...\nTente Novamente";
         msg[5] = "Senha com menos de 8 dígitos!";
         msg[6] = "Este email já está sendo usado por outra conta";
