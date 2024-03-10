@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AppAutenticação</string>
+    <string name="recover_account_info">Insira seu email e clique em Recuperar \nVocê receberá um link de redefinição \nVerifique a caixa de entrada e de spam</string>
 </resources>

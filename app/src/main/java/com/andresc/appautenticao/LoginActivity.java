@@ -25,6 +25,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;
     private FirebaseAuth mAuth;
+    FirebaseUser currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,26 +35,17 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        binding.btnLogin.setOnClickListener(v -> {
-            validData();
-        });
+        binding.btnLogin.setOnClickListener(v -> validData());
 
-        binding.textCad.setOnClickListener(v -> {
-            startActivity(new Intent(this, CadastroActivity.class));
-        });
-        binding.textRec.setOnClickListener(v -> {
-            startActivity(new Intent(this, RecuperarActivity.class));
-        });
+        binding.textCad.setOnClickListener(v -> startActivity(new Intent(this, CadastroActivity.class)));
+        binding.textRec.setOnClickListener(v -> startActivity(new Intent(this, RecuperarActivity.class)));
 
     }
     @Override
     public void onStart() {
         super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
-            //reload();
-            //atualizar a interface
             Log.d(TAG, "Firebase User is Logged-in");
             startActivity(new Intent(this, MainActivity.class));
             finish();
@@ -62,103 +54,55 @@ public class LoginActivity extends AppCompatActivity {
 
     private void validData() {
         binding.progressBar.setVisibility(View.VISIBLE);
-        //coletar strings
+        binding.editEmail.setError(null);
+        binding.editPassword.setError(null);
+        binding.btnLogin.setClickable(false);
+
         String email = binding.editEmail.getText().toString().trim();
         String password = binding.editPassword.getText().toString().trim();
+        binding.editPassword.setText("");
 
         if(email.isEmpty()){
-            //email vazio
+            binding.progressBar.setVisibility(View.INVISIBLE);
             binding.editEmail.setError("Digite o Email");
             binding.editEmail.requestFocus();
             msgLog(1, "");
-            binding.progressBar.setVisibility(View.INVISIBLE);
         }else{
             if(password.isEmpty()){
-                //senha vazia
+                binding.progressBar.setVisibility(View.INVISIBLE);
                 binding.editPassword.setError("Digite a senha");
                 binding.editPassword.requestFocus();
                 msgLog(2, "");
-                binding.progressBar.setVisibility(View.INVISIBLE);
             }else{
-                //dados validados
-                //solicitando criação da conta
                 loginAccountFirebase(email, password);
             }
         }
+        binding.btnLogin.setClickable(true);
     }
 
     private void loginAccountFirebase(String email, String password){
         mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            binding.progressBar.setVisibility(View.INVISIBLE);
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            //updateUI(user);
-                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                            finish();
-                        } else {
-                            binding.progressBar.setVisibility(View.INVISIBLE);
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithEmail:failure", task.getException());
-                            String message = (Objects.requireNonNull(task.getException()).getMessage());
-                            assert message != null;
-                            if (message.equals("The email address is badly formatted.")) {
-                                //email invalido
-                                binding.editEmail.setError("Email Inválido");
-                                binding.editEmail.requestFocus();
-                                msgLog(7, "");
-
-                            } else {
-                                //outro erro
-                                msgLog(9,message);
-                            }
-                            //updateUI(null);
-                            msgLog(4,"");
-                        }
-                    }
-                });
-    }
-    private void createUser(){
-    String email, password;
-    email = ""; password = "";
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    if(task.isSuccessful()){
-                        //sucesso
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
                         binding.progressBar.setVisibility(View.INVISIBLE);
-                        Log.d(TAG, "createUserWithEmail:success");
-                        FirebaseUser user = mAuth.getCurrentUser();
+                        currentUser = mAuth.getCurrentUser();
 
-                        msgLog(3, "");
-                        //redirecionar para Login
-                        //startActivity(new Intent(this, LoginActivity.class));
-                        new Handler(getMainLooper()).postDelayed(this::finish, 4001);
-
-                    }else{
-                        //error
+                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                        finish();
+                    } else {
                         binding.progressBar.setVisibility(View.INVISIBLE);
-                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                        Log.w(TAG, "signInWithEmail:failure", task.getException());
                         String message = (Objects.requireNonNull(task.getException()).getMessage());
                         assert message != null;
-
-                        if(message.equals("The email address is already in use by another account.")){
-                            //email ja utilizado
-                            binding.editEmail.setError("Email já está em uso");
-                            binding.editEmail.requestFocus();
-                            msgLog(6, "");
-
-                        } else if (message.equals("The email address is badly formatted.")) {
-                            //email invalido
+                        if (message.equals("The email address is badly formatted.")) {
                             binding.editEmail.setError("Email Inválido");
                             binding.editEmail.requestFocus();
                             msgLog(7, "");
-
-                        } else {
-                            //outro erro
+                        } else if(message.equals("The supplied auth credential is incorrect, malformed or has expired.")){
+                            binding.editEmail.setError("Email ou senha Incorretos");
+                            binding.editEmail.requestFocus();
+                            msgLog(6, "");
+                        } else{
                             msgLog(9,message);
                         }
                     }
@@ -173,7 +117,7 @@ public class LoginActivity extends AppCompatActivity {
         msg[3] = "Login feito com sucesso!";
         msg[4] = "Ocorreu um erro...\nTente Novamente";
         msg[5] = "Senha com menos de 8 dígitos!";
-        msg[6] = "Este email já está sendo usado por outra conta";
+        msg[6] = "Email ou Senha Incorretos.";
         msg[7] = "Email digitado Incorretamente.";
         msg[8] = "--";
 

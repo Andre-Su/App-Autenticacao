@@ -20,6 +20,7 @@ public class CadastroActivity extends AppCompatActivity {
 
     private ActivityCadastroBinding binding;
     private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,10 +36,8 @@ public class CadastroActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
-            //reload();
             finish();
             startActivity(new Intent(this,LoginActivity.class));
         }
@@ -46,72 +45,58 @@ public class CadastroActivity extends AppCompatActivity {
 
     private void validData() {
         binding.progressBar.setVisibility(View.VISIBLE);
-        //coletar strings
+        binding.editEmail.setError(null);
+        binding.editPassword.setError(null);
+        binding.btnCads.setClickable(false);
+
         String email = binding.editEmail.getText().toString().trim();
         String passw = binding.editPassword.getText().toString().trim();
 
         if(email.isEmpty()){
-            //email vazio
             binding.editEmail.setError("Digite o Email");
             binding.editEmail.requestFocus();
             msgLog(1, "");
             binding.progressBar.setVisibility(View.INVISIBLE);
         }else{
             if(passw.isEmpty()){
-                //senha vazia
                 binding.editPassword.setError("Digite a senha");
                 binding.editPassword.requestFocus();
                 msgLog(2, "");
                 binding.progressBar.setVisibility(View.INVISIBLE);
             } else if (passw.length()<8) {
-                //senha vazia
                 binding.editPassword.setError("Menos de 8 dígitos");
                 binding.editPassword.requestFocus();
                 msgLog(5, "");
                 binding.progressBar.setVisibility(View.INVISIBLE);
             }else{
-                //dados validados
-                //solicitando criação da conta
-                submitAccountFirebase(email, passw);
+                createAccountFirebase(email, passw);
             }
         }
+        binding.btnCads.setClickable(true);
     }
 
-    private void submitAccountFirebase(String email, String password){
+    private void createAccountFirebase(String email, String password){
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if(task.isSuccessful()){
-                        //sucesso
                         binding.progressBar.setVisibility(View.INVISIBLE);
-                        Log.d(TAG, "createUserWithEmail:success");
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        
+                        currentUser = mAuth.getCurrentUser();
                         msgLog(3, "");
-                        //redirecionar para Login
-                        //startActivity(new Intent(this, LoginActivity.class));
                         new Handler(getMainLooper()).postDelayed(this::finish, 4001);
-
                     }else{
-                        //error
                         binding.progressBar.setVisibility(View.INVISIBLE);
-                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
                         String message = (Objects.requireNonNull(task.getException()).getMessage());
                         assert message != null;
-
                         if(message.equals("The email address is already in use by another account.")){
-                            //email ja utilizado
                             binding.editEmail.setError("Email já está em uso");
                             binding.editEmail.requestFocus();
                             msgLog(6, "");
 
                         } else if (message.equals("The email address is badly formatted.")) {
-                            //email invalido
                             binding.editEmail.setError("Email Inválido");
                             binding.editEmail.requestFocus();
                             msgLog(7, "");
-
                         } else {
-                            //outro erro
                             msgLog(9,message);
                         }
                     }

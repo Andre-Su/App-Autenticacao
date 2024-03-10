@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.andresc.appautenticao.databinding.ActivityLoginBinding;
 import com.andresc.appautenticao.databinding.ActivityMainBinding;
@@ -25,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding.btnLogOut.setOnClickListener(v->{
             mAuth.signOut();
+            Toast.makeText(this,"User - Sign out",Toast.LENGTH_SHORT).show();
             finish();
             startActivity(new Intent(this,LoginActivity.class));
         });
@@ -34,12 +36,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser == null){
-            //reload();
             finish();
             startActivity(new Intent(this,LoginActivity.class));
+        }else{
+            Toast.makeText(MainActivity.this,"User - Logged in",Toast.LENGTH_SHORT).show();
         }
     }
 }
